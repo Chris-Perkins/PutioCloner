@@ -21,15 +21,15 @@ func NewStringRegistry(registryPath string) *StringRegistry {
 	registry := &StringRegistry{
 		registryPath: registryPath,
 	}
-	registry.updateRegistryFromFile()
+	registry.loadRegistryState()
 
 	return registry
 }
 
-// MarkProcessed marks the input item registered
+// MarkProcessed marks the input item registered and saves the new registry state
 func (sr *StringRegistry) Register(item string) {
 	sr.registry[item] = true
-	sr.saveRegistryToFile()
+	sr.saveRegistryState()
 }
 
 // IsRegistered returns whether or not the input item is registered
@@ -37,9 +37,9 @@ func (sr *StringRegistry) IsRegistered(item string) bool {
 	return sr.registry[item]
 }
 
-// updateRegistryFromFile updates the local registry with results from the
-// registry path
-func (sr *StringRegistry) updateRegistryFromFile() error {
+// loadRegistryState load the StringRegistry's registry based on the
+// registry's persistent store.
+func (sr *StringRegistry) loadRegistryState() error {
 	if _, err := os.Stat(sr.registryPath); os.IsNotExist(err) {
 		sr.registry = make(map[string]bool)
 		return nil
@@ -57,8 +57,8 @@ func (sr *StringRegistry) updateRegistryFromFile() error {
 	return nil
 }
 
-// saveRegistryToFile saves the input file to the registry
-func (sr *StringRegistry) saveRegistryToFile() error {
+// saveRegistryState saves the registry's state to persistent storage
+func (sr *StringRegistry) saveRegistryState() error {
 	data, err := json.Marshal(sr.registry)
 	if err != nil {
 		return err

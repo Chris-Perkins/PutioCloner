@@ -18,14 +18,14 @@ const (
 	defaultFileMode int = 0644
 )
 
-// DownloadManager is used to handle downloading. It is able to handle the state
-// of multiple download requests at once, and will perform multiple downloads
-// at the same time.
+// DownloadManager is used to handle downloading. It is able to handle multiple
+// downloads at the same time.
 type DownloadManager struct {
 	maxThreads      int
 	chunkSize       int
 	persistencePath string
-	mu              sync.Mutex
+	storeMutex      sync.Mutex
+	downloadMutex   sync.Mutex
 }
 
 func NewDownloadManager(persistencePath string, maxThreads int, chunkSize int) *DownloadManager {
@@ -34,7 +34,6 @@ func NewDownloadManager(persistencePath string, maxThreads int, chunkSize int) *
 		chunkSize:       chunkSize,
 		persistencePath: persistencePath,
 	}
-
 }
 
 type downloadRequest struct {
@@ -50,6 +49,9 @@ func (dm *DownloadManager) RequestDownload(url string, path string) error {
 }
 
 func (dm *DownloadManager) PerformDownloads() error {
+	dm.downloadMutex.Lock()
+	defer dm.downloadMutex.Unlock()
+
 	requests, err := readRequestsFromFile(dm.persistencePath)
 	if err != nil {
 		return err
@@ -73,8 +75,8 @@ func (dm *DownloadManager) PerformDownloads() error {
 }
 
 func (dm *DownloadManager) addRequest(newRequest downloadRequest) error {
-	dm.mu.Lock()
-	defer dm.mu.Unlock()
+	dm.storeMutex.Lock()
+	defer dm.storeMutex.Unlock()
 
 	existingRequests, err := readRequestsFromFile(dm.persistencePath)
 	if err != nil {
@@ -90,8 +92,8 @@ func (dm *DownloadManager) addRequest(newRequest downloadRequest) error {
 }
 
 func (dm *DownloadManager) deleteRequestFromFile(reqToDelete downloadRequest) error {
-	dm.mu.Lock()
-	dm.mu.Unlock()
+	dm.storeMutex.Lock()
+	dm.storeMutex.Unlock()
 
 	existingRequests, err := readRequestsFromFile(dm.persistencePath)
 	if err != nil {

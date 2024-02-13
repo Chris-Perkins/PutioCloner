@@ -31,13 +31,13 @@ func NewPutioScanner(client *putio.Client, registry *registry.StringRegistry, do
 	}
 }
 
-func (c *PutioScanner) CopyNewItemsToFolder(ctx context.Context, path string) error {
+func (c *PutioScanner) Scan(ctx context.Context, path string) error {
 	rootFolderContents, _, err := c.client.Files.List(ctx, rootFolderId)
 	if err != nil {
 		return err
 	}
 	for _, f := range rootFolderContents {
-		err := c.recursivelyCopyNewData(ctx, f, path)
+		err := c.recursivelyScan(ctx, f, path)
 		if err != nil {
 			return err
 		}
@@ -45,7 +45,7 @@ func (c *PutioScanner) CopyNewItemsToFolder(ctx context.Context, path string) er
 	return nil
 }
 
-func (c *PutioScanner) recursivelyCopyNewData(ctx context.Context, file putio.File, outPath string) error {
+func (c *PutioScanner) recursivelyScan(ctx context.Context, file putio.File, outPath string) error {
 	registryKey := getRegistryKey(file)
 	if c.registry.IsRegistered(registryKey) {
 		return nil
@@ -53,9 +53,9 @@ func (c *PutioScanner) recursivelyCopyNewData(ctx context.Context, file putio.Fi
 
 	var err error
 	if file.IsDir() {
-		err = c.handleDirectory(ctx, file, outPath)
+		err = c.scanDirectory(ctx, file, outPath)
 	} else {
-		err = c.downloadItem(ctx, file, outPath)
+		err = c.scanItem(ctx, file, outPath)
 	}
 
 	if err == nil {
@@ -65,7 +65,7 @@ func (c *PutioScanner) recursivelyCopyNewData(ctx context.Context, file putio.Fi
 	return err
 }
 
-func (c *PutioScanner) handleDirectory(ctx context.Context, dir putio.File, outPath string) error {
+func (c *PutioScanner) scanDirectory(ctx context.Context, dir putio.File, outPath string) error {
 	files, _, err := c.client.Files.List(ctx, dir.ID)
 
 	directoryPath := filepath.Join(outPath, dir.Name, "")
@@ -74,7 +74,7 @@ func (c *PutioScanner) handleDirectory(ctx context.Context, dir putio.File, outP
 	}
 
 	for _, f := range files {
-		err := c.recursivelyCopyNewData(ctx, f, directoryPath)
+		err := c.recursivelyScan(ctx, f, directoryPath)
 		if err != nil {
 			return err
 		}
@@ -82,7 +82,7 @@ func (c *PutioScanner) handleDirectory(ctx context.Context, dir putio.File, outP
 	return nil
 }
 
-func (c *PutioScanner) downloadItem(ctx context.Context, file putio.File, downloadPath string) error {
+func (c *PutioScanner) scanItem(ctx context.Context, file putio.File, downloadPath string) error {
 	url, err := c.client.Files.URL(ctx, file.ID, false)
 	if err != nil {
 		return err

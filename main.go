@@ -44,17 +44,18 @@ func main() {
 	putioClient := putio.NewClient(oauthClient)
 	registry := registry.NewStringRegistry(config.registryPath)
 	downloadManager := cloning.NewDownloadManager(config.downloadRequestsPath, config.maxThreads, config.chunkSize)
-	cloner := cloning.NewPutioScanner(putioClient, registry, downloadManager)
+	scanner := cloning.NewPutioScanner(putioClient, registry, downloadManager)
 
 	wg := sync.WaitGroup{}
 
 	ctx := context.Background()
+	// Scanner Async Loop
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
 
 		for {
-			err := cloner.CopyNewItemsToFolder(ctx, config.outputFolder)
+			err := scanner.Scan(ctx, config.outputFolder)
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -62,6 +63,7 @@ func main() {
 		}
 	}()
 
+	// DownloadManager Async Loop
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -75,6 +77,7 @@ func main() {
 		}
 	}()
 
+	// Continue running until both Scanner and DownloadManager crash
 	wg.Wait()
 }
 
@@ -96,7 +99,7 @@ func parseLaunchConfiguration() *configuration {
 	flag.StringVar(&outputFolder, outputFolderKey, filepath.Join(defaultOutput, "Downloads"), "The download location for putio files")
 	flag.StringVar(&registryPath, registryPathKey, ".registry", "The location of the local file registry")
 	flag.StringVar(&requestsPath, downloadRequestsPathKey, ".requests", "The location of pending download requests")
-	flag.IntVar(&refreshRate, refreshRateKey, 60, "How often this application should run its loops in seconds")
+	flag.IntVar(&refreshRate, refreshRateKey, 30, "How often this application should run its loops in seconds")
 	flag.IntVar(&chunkSize, chunkSizeKey, 5*1024*1024, "The chunk size to download. Default 5 MB")
 	flag.IntVar(&maxThreads, maxThreadsKey, 3, "The maximum number of threads for downloading at the directory level")
 	flag.Parse()
