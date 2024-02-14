@@ -13,17 +13,17 @@ Sample usage
 
 ```
 $ go run main.go --help
-Usage of C:\Users\slam\AppData\Local\Temp\go-build1408396180\b001\exe\main.exe:
+Usage of C:\Cloner\main.exe:
   -chunk-size int
-        The chunk size to download. Default 5 MB
-  -max-threads int
-        The maximum number of threads for downloading at the directory level (default 3)
+        The chunk size to use when downloading files, default 5 MB
+  -max-concurrent int
+        The maximum number of concurrent downloads (default 3)
   -out string
-        The download location for putio files (default ".\Downloads")
+        The download location for putio files, default $WorkingDirectory>/Downloads
   -putio-token string
-        OAuth2 token for putio
+        Required, the OAuth2 token for your Put.io account
   -refresh-rate int
-        How often this application should run its loops in seconds (default 60)
+        How often this application should run its loops in seconds (default 30)
   -registry string
         The location of the local file registry (default ".registry")
   -requests string
