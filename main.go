@@ -22,7 +22,7 @@ const (
 	registryPathKey         string = "registry"
 	downloadRequestsPathKey string = "requests"
 	chunkSizeKey            string = "chunk-size"
-	maxThreadsKey           string = "max-threads"
+	maxThreadsKey           string = "max-concurrent"
 )
 
 type configuration struct {
@@ -95,13 +95,13 @@ func parseLaunchConfiguration() *configuration {
 		panic(err)
 	}
 
-	flag.StringVar(&putioToken, putioTokenKey, "", "OAuth2 token for putio")
-	flag.StringVar(&outputFolder, outputFolderKey, filepath.Join(defaultOutput, "Downloads"), "The download location for putio files")
+	flag.StringVar(&putioToken, putioTokenKey, "", "Required, the OAuth2 token for your Put.io account")
+	flag.StringVar(&outputFolder, outputFolderKey, filepath.Join(defaultOutput, "Downloads"), "The download location for putio files, default $WorkingDirectory>/Downloads")
 	flag.StringVar(&registryPath, registryPathKey, ".registry", "The location of the local file registry")
 	flag.StringVar(&requestsPath, downloadRequestsPathKey, ".requests", "The location of pending download requests")
 	flag.IntVar(&refreshRate, refreshRateKey, 30, "How often this application should run its loops in seconds")
-	flag.IntVar(&chunkSize, chunkSizeKey, 5*1024*1024, "The chunk size to download. Default 5 MB")
-	flag.IntVar(&maxThreads, maxThreadsKey, 3, "The maximum number of threads for downloading at the directory level")
+	flag.IntVar(&chunkSize, chunkSizeKey, 5*1024*1024, "The chunk size to use when downloading files, default 5 MB")
+	flag.IntVar(&maxThreads, maxThreadsKey, 3, "The maximum number of concurrent downloads")
 	flag.Parse()
 
 	return &configuration{
