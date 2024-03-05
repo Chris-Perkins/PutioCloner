@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	rootFolderId          int64 = 0
-	makeDirPermissionMode       = 0755
+	rootFolderId          = 0
+	makeDirPermissionMode = 0755
 )
 
 // PutioScanner is used to scan for new items available in Putio. New items
@@ -19,8 +19,6 @@ type PutioScanner struct {
 	client          *putio.Client
 	registry        *registry.StringRegistry
 	downloadManager *DownloadManager
-	chunkSize       int
-	maxThreads      int
 }
 
 func NewPutioScanner(client *putio.Client, registry *registry.StringRegistry, downloadManager *DownloadManager) *PutioScanner {
