@@ -62,12 +62,12 @@ func (dm *DownloadManager) PerformDownloads() error {
 	for _, req := range requests {
 		req1 := req
 		eg.Go(func() error {
-			fmt.Println(fmt.Sprintf("Downloading %s", req1.DownloadPath))
+			fmt.Printf("Downloading %s\n", req1.DownloadPath)
 			err := downloadFileInChunks(req1.DownloadURL, req1.DownloadPath, dm.chunkSize)
 			if err != nil {
 				return err
 			}
-			fmt.Println(fmt.Sprintf("- Downloaded %s", req1.DownloadPath))
+			fmt.Printf("- Downloaded %s\n", req1.DownloadPath)
 			return dm.deleteRequestFromFile(req1)
 		})
 	}

@@ -57,11 +57,9 @@ func (c *PutioScanner) recursivelyScan(ctx context.Context, file putio.File, out
 	} else {
 		err = c.scanItem(ctx, file, outPath)
 	}
-
 	if err == nil {
 		c.registry.Register(registryKey)
 	}
-
 	return err
 }
 
@@ -91,5 +89,5 @@ func (c *PutioScanner) scanItem(ctx context.Context, file putio.File, downloadPa
 }
 
 func getRegistryKey(file putio.File) string {
-	return file.CRC32 + file.UpdatedAt.String()
+	return file.Name + file.CreatedAt.GoString() + file.UpdatedAt.String()
 }
